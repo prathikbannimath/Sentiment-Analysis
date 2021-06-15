@@ -1,0 +1,57 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly.offline as py
+import os
+for dirname, _, filenames in os.walk('/kaggle/input'):
+    for filename in filenames:
+        print(os.path.join(dirname, filename))
+   
+import re
+import nltk
+nltk.download("stopwords")
+nltk.download('punkt')
+from nltk import word_tokenize,sent_tokenize
+nltk.download('wordnet')
+import nltk as nlp
+
+df = pd.read_csv('stock_data.csv',encoding='utf8')
+df[0:20]
+
+cult_list=[]
+
+for cult in df.Text:
+    cult=re.sub("[^a-zA-z]"," ",cult)
+    cult=cult.lower()
+    cult=nltk.word_tokenize(cult)
+    lemma=nlp.WordNetLemmatizer()
+    cult=[lemma.lemmatize(word) for word in cult]
+    cult=" ".join(cult)
+    cult_list.append(cult)
+    
+from sklearn.feature_extraction.text import CountVectorizer
+
+max_features=400
+count_vectorizer=CountVectorizer(max_features=max_features,stop_words="english")
+sparce_matrix=count_vectorizer.fit_transform(cult_list).toarray()
+
+sparce_matrix.shape
+
+sparce_matrix
+
+print("Top {} the most used words: {}".format(max_features,count_vectorizer.get_feature_names()))
+
+data = pd.DataFrame(count_vectorizer.get_feature_names(),columns=["Words"])
+data[0:10]
+
+from wordcloud import WordCloud 
+import matplotlib.pyplot as plt
+
+plt.subplots(figsize=(16,16))
+wordcloud=WordCloud(background_color="black",width=1024,height=768).generate(" ".join(data.Words[0:400]))
+plt.imshow(wordcloud)
+plt.axis("off")
+plt.show()
